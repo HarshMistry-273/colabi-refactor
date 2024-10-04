@@ -16,18 +16,20 @@ def get_task_id_desc_ser(tasks):
     return task_dict
 
 
-def get_task_ser(tasks):
-    task_dict = {}
+def get_task_ser(tools):
+    tools_dict = {}
 
-    for task in tasks:
-        task_dict.update(
+    if not isinstance(tools, list):
+        tools = [tools]
+    for tool in tools:
+        tools_dict.update(
             {
-                "id": task.id,
-                "name": task.name,
-                "description": task.description,
-                "agent_id": task.agent_id,
-                "created_at": task.created_at,
+                "id": tool.id,
+                "name": tool.name,
+                "description": tool.description,
+                "agent_id": tool.agent_id,
+                "created_at": str(tool.created_at),
             }
         )
 
-    return task_dict
+    return tools_dict

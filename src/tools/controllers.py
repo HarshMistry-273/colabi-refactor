@@ -13,6 +13,7 @@ def create_tool_ctrl(tool):
         db.commit()
         db.refresh(new_tool)
 
+        new_tool = get_task_ser(new_tool)
         return new_tool
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

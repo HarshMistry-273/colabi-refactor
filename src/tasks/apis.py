@@ -121,7 +121,7 @@ def create_task(tasks: CreateTaskSchema, request: Request):
             pd.DataFrame(custom_task_output.json_dict).to_csv(
                 "static/" + file_name, index=False
             )
-            full_file_url = f"{request.base_url}static/{file_name}"
+            full_file_url = f"{request.base_url}api/v1/tasks/download/{file_name}"
 
         update_task_ctrl(
             new_task.id, custom_task_output.raw, comment_task_output.raw, full_file_url
