@@ -1,14 +1,31 @@
 from crewai import Agent, Process, Task, Crew
 from langchain.tools import Tool
-from langchain_community.tools import TavilySearchResults
 from src.config import Config
 from langchain_openai import ChatOpenAI
 from src.crew_agents.prompts import get_comment_task_prompt, get_task_prompt
 from src.crew_search_bot import OutputFile
-from src.utils.utils import get_uuid
 
 
 class CustomAgent:
+    """
+    A custom agent class that creates and manages a crew of agents to perform tasks.
+
+    This class initializes agents, creates tasks, and manages a crew to execute those tasks.
+    It uses OpenAI's ChatGPT model for natural language processing.
+
+    Attributes:
+        model (ChatOpenAI): The language model used by the agents.
+        role (str): The role of the primary agent.
+        goal (str): The goal of the primary agent.
+        backstory (str): The backstory of the primary agent.
+        tools (list[Tool]): A list of tools available to the primary agent.
+        agents (list[Agent]): A list of agents (primary and comment agents).
+        expected_output (str): The expected output format for the primary task.
+        description (str): The description of the primary task.
+        tasks (list[Task]): A list of tasks to be performed.
+        crew (Crew): A crew object managing the agents and tasks.
+    """
+
     def __init__(
         self,
         role: str,

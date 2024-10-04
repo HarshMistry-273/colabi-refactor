@@ -30,10 +30,12 @@ def get_tasks_ctrl(id):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def update_task_ctrl(id, res):
+def update_task_ctrl(id, res, comment, full_file_url):
     try:
         update = {
             "response": res,
+            "comment": comment,
+            "attachments": full_file_url,
             "completed_at": datetime.now(tz=UTC),
             "status": "completed",
         }

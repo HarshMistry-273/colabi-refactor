@@ -1,6 +1,4 @@
-from fastapi import FastAPI, status
-from src.crew_search_bot import CrewAgent
-
+from fastapi import FastAPI
 from src.agents.apis import router as agents_router
 from src.tools.apis import router as tools_router
 from src.tasks.apis import router as tasks_router

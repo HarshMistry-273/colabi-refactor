@@ -16,6 +16,8 @@ class Task(Base):
     description = Column(Text, nullable=False)
     expected_output = Column(Text, nullable=False)
     response = Column(Text, nullable=True)
+    comment = Column(Text, nullable=True)
+    attachments = Column(Text, nullable=True)
     status = Column(String(10), default="processing")
     completed_at = Column(DateTime, nullable=True)
     agent_id = Column(String(36), ForeignKey("agents.id", ondelete="CASCADE"))

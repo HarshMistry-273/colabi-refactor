@@ -4,7 +4,15 @@ from langchain.tools import Tool
 
 
 class CustomTool:
+    """
+    A utility class that provides static methods to create custom search tools.
 
+    This class contains methods to create tools for Tavily search and Google Serper API search.
+    These tools can be used in conjunction with agent-based systems or other applications
+    that require search functionality.
+    """
+
+    @staticmethod
     def tavily_search_results(
         tool_name: str = "tavily_search",
         description: str = "search results",
@@ -25,6 +33,7 @@ class CustomTool:
 
         return tool
 
+    @staticmethod
     def google_serper_api_wrapper(
         tool_name: str = "google_serper_search",
         description: str = "search results",
@@ -40,3 +49,8 @@ class CustomTool:
 
         return tool
 
+
+mapping = {
+    "tavily_search": CustomTool.tavily_search_results(),
+    "google_serper_search": CustomTool.google_serper_api_wrapper(),
+}

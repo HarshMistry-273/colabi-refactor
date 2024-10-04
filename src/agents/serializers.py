@@ -1,10 +1,10 @@
-from models.model import Agent
+from src.agents.models import Agent
 from pydantic import BaseModel
 from datetime import datetime
 
 
 class GetAgentSchema(BaseModel):
-    id: int
+    id: str
     name: str
     role: str
     goal: str

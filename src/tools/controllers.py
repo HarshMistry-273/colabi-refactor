@@ -11,9 +11,9 @@ def create_tool_ctrl(tool):
         )
         db.add(new_tool)
         db.commit()
-        db.refresh()
+        db.refresh(new_tool)
 
-        return get_task_id_desc_ser(new_tool)
+        return new_tool
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -28,3 +28,12 @@ def get_tools_ctrl(id):
         return tools
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+def get_tools_by_agent_id(agent_id):
+    try:
+        tools = db.query(Tool).filter(Tool.agent_id == agent_id).all()
+
+        return tools
+    except Exception as e:
+        raise HTTPException(status_code=500, details=str(e))

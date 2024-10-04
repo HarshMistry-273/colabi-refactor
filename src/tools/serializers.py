@@ -4,7 +4,7 @@ from pydantic import BaseModel
 class CreateToolSchema(BaseModel):
     name: str
     description: str
-    agent_id: int
+    agent_id: str
 
 
 def get_task_id_desc_ser(tasks):

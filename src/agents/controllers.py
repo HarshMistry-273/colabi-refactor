@@ -1,5 +1,5 @@
 from database import db
-from src.agents.models import Agents
+from src.agents.models import Agent
 from fastapi import HTTPException
 from src.agents.serializers import get_agent_serializer
 

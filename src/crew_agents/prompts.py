@@ -11,4 +11,6 @@ def get_comment_task_prompt():
 
 
 def get_desc_prompt(goal, description):
-    prompt = f"""Goal of the task: {goal}. Follow the instruction: {description}. Optimize the task by ensuring clarity, precision, and accuracy in the information gathered, while maintaining alignment with the specified goal. Focus on delivering concise insights that meet the task requirements effectively."""
+    prompt = f"""Goal of the task: {goal}. Follow the instruction: {description}. First read and analyze the instruction. Optimize the task by ensuring clarity, precision, and accuracy in the information gathered, while maintaining alignment with the specified goal. Focus on delivering concise insights that meet the task requirements effectively."""
+
+    return prompt
