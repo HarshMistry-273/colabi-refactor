@@ -5,7 +5,8 @@ from langchain_community.tools import TavilySearchResults
 from src.config import Config
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
-from models.model import get_uuid
+from src.utils.utils import get_uuid
+
 
 
 class OutputFile(BaseModel):

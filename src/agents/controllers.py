@@ -1,5 +1,5 @@
 from database import db
-from models.model import Agent
+from src.agents.models import Agents
 from fastapi import HTTPException
 from src.agents.serializers import get_agent_serializer
 
@@ -24,7 +24,7 @@ def create_agent_ctrl(agent):
         db.add(new_agent)
         db.commit()
         db.refresh(new_agent)
-        
+
         return get_agent_serializer([new_agent])
     except Exception as e:
         db.rollback()

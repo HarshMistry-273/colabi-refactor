@@ -1,10 +1,16 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from src.agents.controllers import get_agents_ctrl
+from src.crew_agents.custom_agents import CustomAgent
+from src.crew_agents.prompts import get_desc_prompt
 from src.tasks.serializers import CreateTaskSchema
 from src.tasks.controllers import get_tasks_ctrl, create_tasks_ctrl, update_task_ctrl
-from src.crew_search_bot import CrewAgent
+
+# from src.crew_search_bot import CrewAgent
+
 import pandas as pd
+
+from src.utils.utils import get_uuid
 
 router = APIRouter()
 
@@ -25,50 +31,45 @@ def get_task(id: int):
 
 @router.post("")
 def create_task(tasks: CreateTaskSchema, request: Request):
-
     new_task = create_tasks_ctrl(tasks)
-
     agent = get_agents_ctrl(tasks.agent_id)[0]
-    # agent = agent[0]
+    prompt = get_desc_prompt(agent["goal"], tasks.description)
 
-    init_task = CrewAgent(
+    init_task = CustomAgent(
         role=agent["role"],
         backstory=agent["backstory"],
         goal=agent["goal"],
+        tools=[],
         expected_output=new_task.expected_output,
-        required_csv=tasks.csv,
-        csv_file_name=tasks.csv_file_name,
+        description=prompt,
     )
-    prompt = f"""Goal of the task: {agent['goal']}. Follow the instruction: {tasks.description}. Optimize the task by ensuring clarity, precision, and accuracy in the information gathered, while maintaining alignment with the specified goal. Focus on delivering concise insights that meet the task requirements effectively."""
 
-    res = init_task.main(description=prompt)
-    
-    tasks_output = res.tasks_output
-    comment_task_output = tasks_output[1].raw
+    custom_task_output, comment_task_output = init_task.main()
 
-    actual_agent_output = tasks_output[0]
-    max_length = max(len(v) for v in actual_agent_output.json_dict.values())
+    max_length = max(len(v) for v in custom_task_output.json_dict.values())
 
-    for key in actual_agent_output.json_dict.keys():
-        actual_agent_output.json_dict[key] += [None] * (max_length - len(actual_agent_output.json_dict[key]))
-
-    if tasks.csv:
-        file_name, ext = init_task.csv_file_name.rsplit(".")
-        pd.DataFrame(actual_agent_output.json_dict).to_csv(
-            "static/" + file_name + "." + "csv", index=False
+    for key in custom_task_output.json_dict.keys():
+        custom_task_output.json_dict[key] += [None] * (
+            max_length - len(custom_task_output.json_dict[key])
         )
-    if init_task.csv_file_name:
-        full_file_url = f"{request.base_url}download/{init_task.csv_file_name}"
 
-    update_task_ctrl(new_task.id, res)
+    full_file_url = None
+    if tasks.is_csv:
+        file_name = f"{get_uuid()}.csv"
+        pd.DataFrame(custom_task_output.json_dict).to_csv(
+            "static/" + file_name, index=False
+        )
+        full_file_url = f"{request.base_url}static/{file_name}"
+
+    update_task_ctrl(new_task.id, custom_task_output.raw)
     return JSONResponse(
         content={
             "id": new_task.id,
             "description": new_task.description,
             "agent_id": new_task.agent_id,
             "expected_output": new_task.expected_output,
-            "response": actual_agent_output.raw,
-            "comment" : comment_task_output,
+            "response": custom_task_output.raw,
+            "comment": comment_task_output.raw,
             "file_path": full_file_url,
         }
     )

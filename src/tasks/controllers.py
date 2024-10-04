@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from database import db
-from models.model import Task
+from src.tasks.models import Task
 from datetime import datetime, UTC
 
 

@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from database import db
-from models.model import Tool
+from src.tools.models import Tool
 from src.tools.serializers import get_task_id_desc_ser, get_task_ser
 
 
