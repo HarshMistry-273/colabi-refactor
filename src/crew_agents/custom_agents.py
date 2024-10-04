@@ -3,7 +3,7 @@ from langchain.tools import Tool
 from src.config import Config
 from langchain_openai import ChatOpenAI
 from src.crew_agents.prompts import get_comment_task_prompt, get_task_prompt
-from src.crew_search_bot import OutputFile
+from src.crew_agents.serializers import OutputFile
 
 
 class CustomAgent:
