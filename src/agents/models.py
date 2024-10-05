@@ -1,4 +1,4 @@
-from sqlalchemy import String, DateTime, Column, Text
+from sqlalchemy import String, DateTime, Column, Text, JSON
 from sqlalchemy.orm import relationship
 from database import Base
 from datetime import datetime, UTC
@@ -15,7 +15,7 @@ class Agent(Base):
     role = Column(Text, nullable=False)
     goal = Column(Text, nullable=False)
     backstory = Column(Text, nullable=False)
+    tools = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.now(tz=UTC))
 
-    tool = relationship("Tool", back_populates="agent", cascade="all, delete-orphan")
     task = relationship("Task", back_populates="agent", cascade="all, delete-orphan")

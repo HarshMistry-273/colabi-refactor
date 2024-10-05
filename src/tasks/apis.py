@@ -8,7 +8,7 @@ from src.tasks.serializers import CreateTaskSchema
 from src.tasks.controllers import get_tasks_ctrl, create_tasks_ctrl, update_task_ctrl
 from src.crew_agents.custom_tools import mapping
 import pandas as pd
-from src.tools.controllers import get_tools_by_agent_id
+from src.tools.controllers import get_tools_by_agent_id, get_tools_ctrl
 from src.utils.utils import get_uuid
 
 router = APIRouter()
@@ -59,7 +59,8 @@ def get_task(id: str):
         )
     except Exception as e:
         return JSONResponse(
-            status_code=500, content={"data": {}, "error_msg": "", "error": str(e)}
+            status_code=500,
+            content={"data": {}, "error_msg": "Invalid request", "error": str(e)},
         )
 
 
@@ -91,11 +92,12 @@ def create_task(tasks: CreateTaskSchema, request: Request):
         new_task = create_tasks_ctrl(tasks)
         agent = get_agents_ctrl(tasks.agent_id)[0]
         prompt = get_desc_prompt(agent["goal"], tasks.description)
-        get_tools = get_tools_by_agent_id(tasks.agent_id)
+        get_tools = agent["tools"]
 
         tools = []
         for tool in get_tools:
-            tools.append(mapping[tool.name])
+            agent_tool = get_tools_ctrl(tool)
+            tools.append(mapping[agent_tool["name"]])
 
         init_task = CustomAgent(
             role=agent["role"],
@@ -145,7 +147,8 @@ def create_task(tasks: CreateTaskSchema, request: Request):
         )
     except Exception as e:
         return JSONResponse(
-            status_code=500, content={"data": {}, "error_msg": "", "error": str(e)}
+            status_code=500,
+            content={"data": {}, "error_msg": "Invalid request", "error": str(e)},
         )
 
 
@@ -189,5 +192,6 @@ def download_file(file_path: str):
         )
     except Exception as e:
         return JSONResponse(
-            status_code=500, content={"data": {}, "error_msg": "", "error": str(e)}
+            status_code=500,
+            content={"data": {}, "error_msg": "Invalid request", "error": str(e)},
         )

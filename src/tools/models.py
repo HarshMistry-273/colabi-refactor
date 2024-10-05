@@ -14,7 +14,4 @@ class Tool(Base):
     )
     name = Column(String(255), nullable=True)
     description = Column(Text, nullable=True)
-    agent_id = Column(String(36), ForeignKey("agents.id", ondelete="CASCADE"))
     created_at = Column(DateTime, default=datetime.now(tz=UTC))
-
-    agent = relationship("Agent", back_populates="tool")
