@@ -31,10 +31,6 @@ def get_agents(id: str = None):
                 - data: An empty dictionary.
                 - error_msg: An empty string.
                 - error: The string representation of the exception that occurred.
-
-    Raises:
-        No exceptions are raised directly by this function. All exceptions are caught
-        and returned as part of the error response.
     """
     try:
 
@@ -51,7 +47,7 @@ def get_agents(id: str = None):
 
     except Exception as e:
         return JSONResponse(
-            status_code=500, content={"data": {}, "error_msg": "", "error": str(e)}
+            status_code=500, content={"data": {}, "error_msg": "Invalid request", "error": str(e)}
         )
 
 
@@ -96,5 +92,5 @@ def create_agent(agent: CreateAgentSchema):
 
     except Exception as e:
         return JSONResponse(
-            status_code=500, content={"data": {}, "error_msg": "", "error": str(e)}
+            status_code=500, content={"data": {}, "error_msg": "Invalid request", "error": str(e)}
         )

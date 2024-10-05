@@ -35,7 +35,7 @@ def get_tools(id: str = None):
         )
     except Exception as e:
         return JSONResponse(
-            status_code=500, content={"data": {}, "error_msg": "", "error": str(e)}
+            status_code=500, content={"data": {}, "error_msg": "Invalid request", "error": str(e)}
         )
 
 
@@ -71,5 +71,5 @@ def create_tools(tool: CreateToolSchema):
         )
     except Exception as e:
         return JSONResponse(
-            status_code=500, content={"data": {}, "error_msg": "", "error": str(e)}
+            status_code=500, content={"data": {}, "error_msg": "Invalid request", "error": str(e)}
         )
