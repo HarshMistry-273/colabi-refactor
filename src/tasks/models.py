@@ -12,7 +12,6 @@ class Task(Base):
     id = Column(
         String(36), primary_key=True, index=True, nullable=False, default=get_uuid
     )
-    # topic = Column(String(255), nullable=True)
     description = Column(Text, nullable=False)
     expected_output = Column(Text, nullable=False)
     response = Column(Text, nullable=True)

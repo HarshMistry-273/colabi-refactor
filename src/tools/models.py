@@ -1,8 +1,6 @@
-from sqlalchemy import String, DateTime, Column, ForeignKey, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy import String, DateTime, Column, Text
 from database import Base
 from datetime import datetime, UTC
-from src.agents.models import Agent
 from src.utils.utils import get_uuid
 
 

@@ -6,9 +6,7 @@ from src.tools.serializers import get_task_id_desc_ser, get_task_ser
 
 def create_tool_ctrl(tool: Tool):
     try:
-        new_tool = Tool(
-            name=tool.name, description=tool.description
-        )
+        new_tool = Tool(name=tool.name, description=tool.description)
         db.add(new_tool)
         db.commit()
         db.refresh(new_tool)
