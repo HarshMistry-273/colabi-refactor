@@ -8,7 +8,7 @@ from src.tasks.serializers import CreateTaskSchema
 from src.tasks.controllers import get_tasks_ctrl, create_tasks_ctrl, update_task_ctrl
 from src.crew_agents.custom_tools import mapping
 import pandas as pd
-from src.tools.controllers import get_tools_by_agent_id, get_tools_ctrl
+from src.tools.controllers import get_tools_ctrl
 from src.utils.utils import get_uuid
 
 router = APIRouter()
