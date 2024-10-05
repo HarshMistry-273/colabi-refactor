@@ -118,6 +118,8 @@ def create_task(tasks: CreateTaskSchema, request: Request):
         full_file_url = None
         if tasks.is_csv:
             file_name = f"{get_uuid()}.csv"
+            if not os.path.exists("static/"):
+                os.mkdir("static")
             pd.DataFrame(custom_task_output.json_dict).to_csv(
                 "static/" + file_name, index=False
             )
