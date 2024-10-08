@@ -122,7 +122,7 @@ def create_task(
             tasks.is_csv,
             str(request.base_url),
             new_task.id,
-        ) 
+        )
 
         return JSONResponse(
             status_code=200,
