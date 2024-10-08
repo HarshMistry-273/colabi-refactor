@@ -1,14 +1,12 @@
 from fastapi import HTTPException
-from database import db
 from src.tools.models import Tool
 from src.tools.serializers import get_task_id_desc_ser, get_task_ser
+from sqlalchemy.orm import Session
 
 
-def create_tool_ctrl(tool):
+def create_tool_ctrl(db: Session, tool: Tool):
     try:
-        new_tool = Tool(
-            name=tool.name, description=tool.description, agent_id=tool.agent_id
-        )
+        new_tool = Tool(name=tool.name, description=tool.description)
         db.add(new_tool)
         db.commit()
         db.refresh(new_tool)
@@ -19,7 +17,7 @@ def create_tool_ctrl(tool):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def get_tools_ctrl(id):
+def get_tools_ctrl(db: Session, id):
     try:
         if id:
             tools = db.query(Tool).filter(Tool.id == id).all()
@@ -31,7 +29,7 @@ def get_tools_ctrl(id):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def get_tools_by_agent_id(agent_id):
+def get_tools_by_agent_id(db: Session, agent_id):
     try:
         tools = db.query(Tool).filter(Tool.agent_id == agent_id).all()
 

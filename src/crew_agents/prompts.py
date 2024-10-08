@@ -10,7 +10,9 @@ def get_comment_task_prompt():
     return prompt
 
 
-def get_desc_prompt(goal, description):
-    prompt = f"""Goal of the task: {goal}. Follow the instruction: {description}. First read and analyze the instruction. Optimize the task by ensuring clarity, precision, and accuracy in the information gathered, while maintaining alignment with the specified goal. Focus on delivering concise insights that meet the task requirements effectively."""
+def get_desc_prompt(goal, description, previous_output):
+    prompt = f"""Goal of the task: {goal}. Follow the instruction: {description}. First read and analyze the instruction. Optimize the task by ensuring clarity, precision, and accuracy in the information gathered, while maintaining alignment with the specified goal. Focus on delivering concise insights that meet the task requirements effectively. """
+    if previous_output:
+        prompt += f"""The following output is previous output by agents for more context: {str(previous_output)}"""
 
     return prompt
