@@ -2,6 +2,8 @@ from langchain_community.tools import TavilySearchResults
 from langchain_community.utilities import GoogleSerperAPIWrapper
 from langchain.tools import Tool
 
+from src.config import Config
+
 
 class CustomTool:
     """
@@ -52,5 +54,5 @@ class CustomTool:
 
 mapping = {
     "tavily_search": CustomTool.tavily_search_results(),
-    "google_serper_search": CustomTool.google_serper_api_wrapper(),
+    "google_serper_search": CustomTool.google_serper_api_wrapper(Config.SERPER_API_KEY),
 }

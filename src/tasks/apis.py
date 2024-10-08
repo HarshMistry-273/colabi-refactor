@@ -1,7 +1,10 @@
 import os
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Depends
+from sqlalchemy.orm import Session
 from fastapi.responses import FileResponse, JSONResponse
+from database import get_db_session
 from src.agents.controllers import get_agents_ctrl
+from src.tasks.task import start_agent
 from src.crew_agents.custom_agents import CustomAgent
 from src.crew_agents.prompts import get_desc_prompt
 from src.tasks.serializers import CreateTaskSchema
@@ -15,7 +18,7 @@ router = APIRouter()
 
 
 @router.get("")
-def get_task(id: str):
+def get_task(id: str, db: Session = Depends(get_db_session)):
     """
     Retrieve a task by its ID and return its details as a JSON response.
 
@@ -37,7 +40,7 @@ def get_task(id: str):
             - created_at: The timestamp when the task was created (as a string).
     """
     try:
-        tasks = get_tasks_ctrl(id)
+        tasks = get_tasks_ctrl(db, id)
 
         return JSONResponse(
             status_code=200,
@@ -65,7 +68,9 @@ def get_task(id: str):
 
 
 @router.post("")
-def create_task(tasks: CreateTaskSchema, request: Request):
+def create_task(
+    tasks: CreateTaskSchema, request: Request, db: Session = Depends(get_db_session)
+):
     """
     Create a new task, process it using a custom agent, and return the results.
 
@@ -89,58 +94,41 @@ def create_task(tasks: CreateTaskSchema, request: Request):
         Potential exceptions from called functions are not explicitly handled in this function.
     """
     try:
-        new_task = create_tasks_ctrl(tasks)
-        agent = get_agents_ctrl(tasks.agent_id)[0]
-        prompt = get_desc_prompt(agent["goal"], tasks.description)
+        new_task = create_tasks_ctrl(db, tasks)
+        agent = get_agents_ctrl(db, tasks.agent_id)[0]
+
+        previous_output = []
+
+        if tasks.include_previous_output:
+            for task_id in tasks.previous_output:
+                output = get_tasks_ctrl(db, task_id)
+                previous_output.append(
+                    {
+                        "description": output.description,
+                        "expected_output": output.expected_output,
+                        "response": output.response,
+                    }
+                )
+        prompt = get_desc_prompt(agent["goal"], tasks.description, previous_output)
         get_tools = agent["tools"]
 
-        tools = []
-        for tool in get_tools:
-            agent_tool = get_tools_ctrl(tool)
-            tools.append(mapping[agent_tool["name"]])
-
-        init_task = CustomAgent(
-            role=agent["role"],
-            backstory=agent["backstory"],
-            goal=agent["goal"],
-            tools=tools,
-            expected_output=new_task.expected_output,
-            description=prompt,
+        results = start_agent.delay(
+            agent["role"],
+            agent["backstory"],
+            agent["goal"],
+            get_tools,
+            tasks.expected_output,
+            prompt,
+            tasks.is_csv,
+            str(request.base_url),
+            new_task.id,
         )
 
-        custom_task_output, comment_task_output = init_task.main()
-
-        max_length = max(len(v) for v in custom_task_output.json_dict.values())
-
-        for key in custom_task_output.json_dict.keys():
-            custom_task_output.json_dict[key] += [None] * (
-                max_length - len(custom_task_output.json_dict[key])
-            )
-
-        full_file_url = None
-        if tasks.is_csv:
-            file_name = f"{get_uuid()}.csv"
-            pd.DataFrame(custom_task_output.json_dict).to_csv(
-                "static/" + file_name, index=False
-            )
-            full_file_url = f"{request.base_url}api/v1/tasks/download/{file_name}"
-
-        update_task_ctrl(
-            new_task.id, custom_task_output.raw, comment_task_output.raw, full_file_url
-        )
         return JSONResponse(
             status_code=200,
             content={
                 "message": "Task completed",
-                "data": {
-                    "id": new_task.id,
-                    "description": new_task.description,
-                    "agent_id": new_task.agent_id,
-                    "expected_output": new_task.expected_output,
-                    "output": custom_task_output.raw,
-                    "comment": comment_task_output.raw,
-                    "attachments": full_file_url,
-                },
+                "data": {"task_id": new_task.id},
                 "error_msg": "",
                 "error": "",
             },

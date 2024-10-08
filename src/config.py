@@ -14,3 +14,4 @@ class Config:
     MODEL_NAME = os.getenv('MODEL_NAME')
     DATABSE_URL = os.getenv('DATABASE_URL')
     TAVILY_API_KEY = os.getenv('TAVILY_API_KEY')
+    REDIS_URL = os.getenv("REDIS_URL")

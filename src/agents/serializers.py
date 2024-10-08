@@ -20,6 +20,19 @@ class CreateAgentSchema(BaseModel):
     goal: str
     backstory: str
     tools: Optional[list[str]]
+    # focus_group_title: str
+    # focus_group_description: str
+    # focus_group_objective: str
+    # disscussion_topic: str
+    # top_idea_1: str
+    # top_idea_2: str
+    # validaion_servey_title: str
+    # questions: list[dict]
+    # file_uploaded: bool
+    # file_name: str
+    # context: str
+    # file_type: str
+    # upload_url: str
 
 
 def get_agent_serializer(agents: list[Agent]):
@@ -27,7 +40,7 @@ def get_agent_serializer(agents: list[Agent]):
 
     if not isinstance(agents, list):
         agents = [agents]
-        
+
     for agent in agents:
         agents_list.append(
             {

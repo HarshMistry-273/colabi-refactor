@@ -1,13 +1,15 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
+from database import get_db_session
 from src.agents.serializers import CreateAgentSchema
 from src.agents.controllers import create_agent_ctrl, get_agents_ctrl
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
 
 @router.get("")
-def get_agents(id: str = None):
+def get_agents(id: str = None, db: Session = Depends(get_db_session)):
     """
     Retrieve agents from the system, optionally filtered by ID.
 
@@ -34,7 +36,7 @@ def get_agents(id: str = None):
     """
     try:
 
-        all_agents = get_agents_ctrl(id)
+        all_agents = get_agents_ctrl(db, id)
         return JSONResponse(
             status_code=200,
             content={
@@ -47,12 +49,13 @@ def get_agents(id: str = None):
 
     except Exception as e:
         return JSONResponse(
-            status_code=500, content={"data": {}, "error_msg": "Invalid request", "error": str(e)}
+            status_code=500,
+            content={"data": {}, "error_msg": "Invalid request", "error": str(e)},
         )
 
 
 @router.post("")
-def create_agent(agent: CreateAgentSchema):
+def create_agent(agent: CreateAgentSchema, db: Session = Depends(get_db_session)):
     """
     Create a new agent in the system.
 
@@ -79,7 +82,7 @@ def create_agent(agent: CreateAgentSchema):
 
     """
     try:
-        new_agent = create_agent_ctrl(agent)
+        new_agent = create_agent_ctrl(db, agent)
         return JSONResponse(
             status_code=200,
             content={
@@ -92,5 +95,6 @@ def create_agent(agent: CreateAgentSchema):
 
     except Exception as e:
         return JSONResponse(
-            status_code=500, content={"data": {}, "error_msg": "Invalid request", "error": str(e)}
+            status_code=500,
+            content={"data": {}, "error_msg": "Invalid request", "error": str(e)},
         )
