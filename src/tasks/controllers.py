@@ -36,7 +36,6 @@ def update_task_ctrl(db: Session, id, res, comment, full_file_url):
             "response": res,
             "comment": comment,
             "attachments": full_file_url,
-            "completed_at": datetime.now(tz=UTC),
             "status": "completed",
         }
         task = db.query(Task).filter(Task.id == id).update(update)

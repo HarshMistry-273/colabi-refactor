@@ -1,18 +1,19 @@
 def get_task_prompt():
-    prompt = """Conduct an web search on {description}, focusing on gathering the most recent and credible data available. Provide a detailed yet concise summary, emphasizing key points, trends, and any notable developments. Ensure that all information is gathered from authoritative, trustworthy sources. Include a valid and working link to each data source in the following format: [http://example.com/dataset], and verify that all insights are precise, relevant, and from reputable publications or datasets."""
+    prompt = """Process this task: {description}. Output should be only depend on the task. Try to not include descriptions."""
 
-    return prompt
+    return prompt.strip()
 
 
 def get_comment_task_prompt():
-    prompt = "Provide a insightful comment on the previous task performed by another agent. The comment should assess the task's quality, relevance, and outcomes. If the task involved fetching data, summarize the data and offer thoughts on its significance or potential use. Keep output of max 3 sentance. and if task is completed you can start by saying Task is successfully completed and ..., here is the example: The task was successfully completed, and the data fetched is relevant. These articles/data provide valuable insights into the technological advancements in 2024, demonstrating their ongoing influence in the industry. Potential improvements or further analysis could include exploring the current impact of these innovations."
+    prompt = """Provide exactly one short sentence starting with "Task is successfully completed, and..." that only confirms task completion and information relevance. Do not include details, summaries, or recommendations. Example: "Task is successfully completed, and the gathered data matches the required criteria."
+    """
+    return prompt.strip()
 
-    return prompt
 
+def get_desc_prompt(agent, description, previous_output, relevant_output):
+    prompt = f"""Your primary goal for this task is {agent['goal']}. Please carefully follow these instructions: {description}. Begin by thoroughly reading and analyzing the provided instructions. Your approach should prioritize clarity, precision, and accuracy in gathering and presenting information, while ensuring strict alignment with the specified goal. Focus exclusively on delivering concise, relevant insights that directly address the task requirements. For context, consider the following relevant information from the user-uploaded document: {relevant_output}. This information exists within the broader context of {agent['context']}. The focus group framework involves a group titled "{agent['focus_group_title']}" with the following description: {agent['focus_group_description']}. The core objective of this group is {agent['focus_group_objective']}. The current discussion centers on {agent['discussion_topic']}, with several top ideas identified: {agent['top_ideas']}. For validation purposes, we are conducting a survey titled "{agent['validation_survey_title']}" which includes the following questions: {agent['questions']}. When formulating your response, ensure that you maintain strict relevance to the instructions, demonstrate clear alignment with the primary goal, and present information in a precise, actionable manner. Every insight provided should contribute directly to achieving the stated objective. Do not provide description. Make sure output is too the point and relevant."""
 
-def get_desc_prompt(goal, description, previous_output):
-    prompt = f"""Goal of the task: {goal}. Follow the instruction: {description}. First read and analyze the instruction. Optimize the task by ensuring clarity, precision, and accuracy in the information gathered, while maintaining alignment with the specified goal. Focus on delivering concise insights that meet the task requirements effectively. """
     if previous_output:
-        prompt += f"""The following output is previous output by agents for more context: {str(previous_output)}"""
+        prompt += f"""To provide additional context, consider the following previous output from other agents: {str(previous_output)}. Use this historical context to inform your analysis, ensuring continuity and building upon existing insights while avoiding redundancy. Your response should acknowledge and integrate relevant aspects of this previous work while maintaining focus on the current objectives."""
 
-    return prompt
+    return prompt.strip()

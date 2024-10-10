@@ -1,7 +1,6 @@
 from langchain_community.tools import TavilySearchResults
 from langchain_community.utilities import GoogleSerperAPIWrapper
 from langchain.tools import Tool
-
 from src.config import Config
 
 

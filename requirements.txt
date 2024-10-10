@@ -6,3 +6,7 @@ python-dotenv
 langchain-google-genai
 fastapi[standard]
 pymysql
+langchain-pinecone
+langchain-openai
+celery
+redis

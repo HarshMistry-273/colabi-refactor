@@ -3,8 +3,9 @@ from fastapi import APIRouter, HTTPException, Request, Depends
 from sqlalchemy.orm import Session
 from fastapi.responses import FileResponse, JSONResponse
 from database import get_db_session
-from src.agents.controllers import get_agents_ctrl
-from src.tasks.task import start_agent
+from src.agents.controllers import AgentController
+from src.config import Config
+from src.tasks.task import task_creation_celery
 from src.crew_agents.custom_agents import CustomAgent
 from src.crew_agents.prompts import get_desc_prompt
 from src.tasks.serializers import CreateTaskSchema
@@ -12,7 +13,10 @@ from src.tasks.controllers import get_tasks_ctrl, create_tasks_ctrl, update_task
 from src.crew_agents.custom_tools import mapping
 import pandas as pd
 from src.tools.controllers import get_tools_ctrl
-from src.utils.utils import get_uuid
+from src.utils.utils import PineConeConfig, get_uuid
+from langchain_pinecone import PineconeVectorStore
+from pinecone import Pinecone, ServerlessSpec
+from src.preprocessing import embeddings
 
 router = APIRouter()
 
@@ -95,39 +99,72 @@ def create_task(
     """
     try:
         new_task = create_tasks_ctrl(db, tasks)
-        agent = get_agents_ctrl(db, tasks.agent_id)[0]
 
-        previous_output = []
-
-        if tasks.include_previous_output:
-            for task_id in tasks.previous_output:
-                output = get_tasks_ctrl(db, task_id)
-                previous_output.append(
-                    {
-                        "description": output.description,
-                        "expected_output": output.expected_output,
-                        "response": output.response,
-                    }
-                )
-        prompt = get_desc_prompt(agent["goal"], tasks.description, previous_output)
-        get_tools = agent["tools"]
-
-        results = start_agent.delay(
-            agent["role"],
-            agent["backstory"],
-            agent["goal"],
-            get_tools,
-            tasks.expected_output,
-            prompt,
-            tasks.is_csv,
-            str(request.base_url),
-            new_task.id,
+        res = task_creation_celery.delay(
+            tasks.agent_id, new_task.id, str(request.base_url), tasks.include_previous_output, tasks.previous_output, tasks.is_csv
         )
+
+        # relevant_output = []
+        # if agent["file_upload"]:
+        #     namespace = agent["vector_id"]
+        #     ps = PineConeConfig(
+        #         api_key=Config.PINECONE_API_KEY,
+        #         index_name=Config.PINECONE_INDEX_NAME,
+        #         namespace=namespace,
+        #     )
+        #     vector_output = ps.vector_store.similarity_search(query=tasks.description)
+        #     relevant_output = [
+        #         str(vector_output[i].page_content)
+        #         for i in range(min(len(vector_output), 2))
+        #     ]
+
+        # pc = Pinecone(api_key=Config.PINECONE_API_KEY)
+        # index_name = Config.PINECONE_INDEX_NAME
+        # index = pc.Index(index_name)
+
+        # vector_store = PineconeVectorStore(
+        #     index=index, embedding=embeddings, namespace=namespace
+        # )
+
+        # vector_output = vector_store.similarity_search(query=tasks.description)
+
+        # relevant_output = [
+        #     str(vector_output[i].page_content)
+        #     for i in range(min(len(vector_output), 2))
+        # ]
+
+        # previous_output = []
+        # if tasks.include_previous_output:
+        #     for task_id in tasks.previous_output:
+        #         output = get_tasks_ctrl(db, task_id)
+        #         previous_output.append(
+        #             {
+        #                 "description": output.description,
+        #                 "expected_output": output.expected_output,
+        #                 "response": output.response,
+        #             }
+        #         )
+        # prompt = get_desc_prompt(
+        #     agent, tasks.description, previous_output, relevant_output
+        # )
+        # get_tools = agent["tools"]
+
+        # results = start_agent.delay(
+        #     agent["role"],
+        #     agent["backstory"],
+        #     agent["goal"],
+        #     get_tools,
+        #     tasks.expected_output,
+        #     prompt,
+        #     tasks.is_csv,
+        #     str(request.base_url),
+        #     new_task.id,
+        # )
 
         return JSONResponse(
             status_code=200,
             content={
-                "message": "Task completed",
+                "message": "Task started",
                 "data": {"task_id": new_task.id},
                 "error_msg": "",
                 "error": "",
