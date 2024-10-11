@@ -1,9 +1,15 @@
+import logging.config
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from database import get_db_session
-from src.tools.controllers import create_tool_ctrl, get_tools_ctrl
+from src.tools.controllers import ToolController
 from src.tools.serializers import CreateToolSchema
 from sqlalchemy.orm import Session
+from src.utils.log import logger_set
+import logging
+
+logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -25,7 +31,10 @@ def get_tools(id: str = None, db: Session = Depends(get_db_session)):
         JSONResponse: A response containing either the tools data or an error message.
     """
     try:
-        tools = get_tools_ctrl(db, id)
+        logger.info("Tool listing endpoint")
+        tools = ToolController.get_tools_ctrl(db, id)
+        logger_set.info(f"Tools listed")
+
         return JSONResponse(
             status_code=200,
             content={
@@ -36,6 +45,7 @@ def get_tools(id: str = None, db: Session = Depends(get_db_session)):
             },
         )
     except Exception as e:
+        logger_set.error(f"Error getting tool : {e}")
         return JSONResponse(
             status_code=500,
             content={"data": {}, "error_msg": "Invalid request", "error": str(e)},
@@ -62,7 +72,9 @@ def create_tools(tool: CreateToolSchema, db: Session = Depends(get_db_session)):
         with either a success message and tool data or an error message.
     """
     try:
-        new_tool = create_tool_ctrl(db, tool)
+        logger.info("Tool creation endpoint")
+        new_tool = ToolController.create_tool_ctrl(db, tool)
+        logger_set.info(f"Tool created, Tool id : {tool["id"]}")
         return JSONResponse(
             status_code=200,
             content={
@@ -73,6 +85,7 @@ def create_tools(tool: CreateToolSchema, db: Session = Depends(get_db_session)):
             },
         )
     except Exception as e:
+        logger_set.error(f"Error creating tool : {e}")
         return JSONResponse(
             status_code=500,
             content={"data": {}, "error_msg": "Invalid request", "error": str(e)},

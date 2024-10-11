@@ -1,24 +1,19 @@
+import logging.config
 import os
 from fastapi import APIRouter, HTTPException, Request, Depends
 from sqlalchemy.orm import Session
 from fastapi.responses import FileResponse, JSONResponse
 from database import get_db_session
-from src.agents.controllers import AgentController
-from src.config import Config
 from src.tasks.task import task_creation_celery
-from src.crew_agents.custom_agents import CustomAgent
-from src.crew_agents.prompts import get_desc_prompt
 from src.tasks.serializers import CreateTaskSchema
-from src.tasks.controllers import get_tasks_ctrl, create_tasks_ctrl, update_task_ctrl
-from src.crew_agents.custom_tools import mapping
-import pandas as pd
-from src.tools.controllers import get_tools_ctrl
-from src.utils.utils import PineConeConfig, get_uuid
-from langchain_pinecone import PineconeVectorStore
-from pinecone import Pinecone, ServerlessSpec
-from src.preprocessing import embeddings
+from src.tasks.controllers import TaskController
+import logging
+from src.utils.log import logger_set
 
 router = APIRouter()
+
+logging.config.fileConfig("logging.conf", disable_existing_loggers=False)
+logger = logging.getLogger(__name__)
 
 
 @router.get("")
@@ -44,8 +39,10 @@ def get_task(id: str, db: Session = Depends(get_db_session)):
             - created_at: The timestamp when the task was created (as a string).
     """
     try:
-        tasks = get_tasks_ctrl(db, id)
+        logger.info("Task get endpoint")
+        tasks = TaskController.get_tasks_ctrl(db, id)
 
+        logger_set.info("Task listed successfully.")
         return JSONResponse(
             status_code=200,
             content={
@@ -65,6 +62,7 @@ def get_task(id: str, db: Session = Depends(get_db_session)):
             },
         )
     except Exception as e:
+        logger_set.error(f"Error fetching tasks : {e}")
         return JSONResponse(
             status_code=500,
             content={"data": {}, "error_msg": "Invalid request", "error": str(e)},
@@ -97,70 +95,22 @@ def create_task(
     Raises:
         Potential exceptions from called functions are not explicitly handled in this function.
     """
+    logger.info("Task create endpoint")
+
     try:
-        new_task = create_tasks_ctrl(db, tasks)
+        new_task = TaskController.create_tasks_ctrl(db, tasks)
 
         res = task_creation_celery.delay(
-            tasks.agent_id, new_task.id, str(request.base_url), tasks.include_previous_output, tasks.previous_output, tasks.is_csv
+            tasks.agent_id,
+            new_task.id,
+            str(request.base_url),
+            tasks.include_previous_output,
+            tasks.previous_output,
+            tasks.is_csv,
         )
-
-        # relevant_output = []
-        # if agent["file_upload"]:
-        #     namespace = agent["vector_id"]
-        #     ps = PineConeConfig(
-        #         api_key=Config.PINECONE_API_KEY,
-        #         index_name=Config.PINECONE_INDEX_NAME,
-        #         namespace=namespace,
-        #     )
-        #     vector_output = ps.vector_store.similarity_search(query=tasks.description)
-        #     relevant_output = [
-        #         str(vector_output[i].page_content)
-        #         for i in range(min(len(vector_output), 2))
-        #     ]
-
-        # pc = Pinecone(api_key=Config.PINECONE_API_KEY)
-        # index_name = Config.PINECONE_INDEX_NAME
-        # index = pc.Index(index_name)
-
-        # vector_store = PineconeVectorStore(
-        #     index=index, embedding=embeddings, namespace=namespace
-        # )
-
-        # vector_output = vector_store.similarity_search(query=tasks.description)
-
-        # relevant_output = [
-        #     str(vector_output[i].page_content)
-        #     for i in range(min(len(vector_output), 2))
-        # ]
-
-        # previous_output = []
-        # if tasks.include_previous_output:
-        #     for task_id in tasks.previous_output:
-        #         output = get_tasks_ctrl(db, task_id)
-        #         previous_output.append(
-        #             {
-        #                 "description": output.description,
-        #                 "expected_output": output.expected_output,
-        #                 "response": output.response,
-        #             }
-        #         )
-        # prompt = get_desc_prompt(
-        #     agent, tasks.description, previous_output, relevant_output
-        # )
-        # get_tools = agent["tools"]
-
-        # results = start_agent.delay(
-        #     agent["role"],
-        #     agent["backstory"],
-        #     agent["goal"],
-        #     get_tools,
-        #     tasks.expected_output,
-        #     prompt,
-        #     tasks.is_csv,
-        #     str(request.base_url),
-        #     new_task.id,
-        # )
-
+        logger_set.info(
+            f"Task created successfully, Task id : {new_task.id}, Agent id : {tasks.agent_id}"
+        )
         return JSONResponse(
             status_code=200,
             content={
@@ -171,6 +121,7 @@ def create_task(
             },
         )
     except Exception as e:
+        logger_set.info(f"Error creating task : {e}")
         return JSONResponse(
             status_code=500,
             content={"data": {}, "error_msg": "Invalid request", "error": str(e)},

@@ -1,7 +1,7 @@
 from uuid import uuid4
 from datetime import time
 from src.preprocessing import embeddings, splitter
-from src.celery_worker import celery_app
+from src.celery import celery_app
 from pinecone import Pinecone, ServerlessSpec
 from langchain_pinecone import PineconeVectorStore
 from langchain_core.documents.base import Document
