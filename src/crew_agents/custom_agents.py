@@ -4,6 +4,7 @@ from src.config import Config
 from langchain_openai import ChatOpenAI
 from src.crew_agents.prompts import get_comment_task_prompt, get_task_prompt
 from src.crew_agents.serializers import OutputFile
+from crewai.tasks.task_output import TaskOutput
 
 
 class CustomAgent:
@@ -77,7 +78,7 @@ class CustomAgent:
         agents = [custome_agent, comment_agent]
         return agents
 
-    def create_tasks(self):
+    def create_tasks(self) -> list[Task]:
         prompt = get_task_prompt()
         custom_task = Task(
             description=prompt,
@@ -95,7 +96,7 @@ class CustomAgent:
 
         return [custom_task, comment_task]
 
-    def create_crew(self):
+    def create_crew(self) -> Crew:
         crew = Crew(
             agents=self.agents,
             tasks=self.tasks,
@@ -104,7 +105,7 @@ class CustomAgent:
         )
         return crew
 
-    def main(self):
+    def main(self) -> tuple[list[TaskOutput]]:
         response = self.crew.kickoff(inputs={"description": self.description})
         output = response.tasks_output
 

@@ -24,7 +24,7 @@ class AgentController:
             raise HTTPException(status_code=500, detail=str(e))
 
     @staticmethod
-    def create_agent_ctrl(db: Session, agent: Agent):
+    def create_agent_ctrl(db: Session, agent: Agent) -> list[dict]:
         try:
             new_agent = Agent(
                 name=agent.name,
@@ -52,7 +52,7 @@ class AgentController:
         tools: str,
         payload: dict,
         file: UploadFile,
-    ):
+    ) -> list[dict]:
         try:
             file_path = None
             namespace = None

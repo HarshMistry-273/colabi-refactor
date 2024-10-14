@@ -42,7 +42,7 @@ class UpdateCustomAgent(BaseModel):
     upload_url: Optional[str] = None
 
 
-def get_agent_serializer(agents: list[Agent]):
+def get_agent_serializer(agents: list[Agent]) -> list[dict]:
     agents_list = []
 
     if not isinstance(agents, list):
