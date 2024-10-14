@@ -110,12 +110,10 @@ class AgentController:
         file: UploadFile = None,
     ) -> list[dict]:
         try:
-
-            if id:
-                agent = db.query(Agent).filter(Agent.id == id).first()
+            agent = db.query(Agent).filter(Agent.id == id).first()
 
             if not agent:
-                raise HTTPException(status_code=500, detail="Agent not Found")
+                raise HTTPException(status_code=404, detail="Agent not found")
 
             if name:
                 payload.update({"name": name})

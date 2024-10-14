@@ -26,19 +26,20 @@ def task_creation_celery(
         task: Task = TaskController.get_tasks_ctrl(db, task_id)
 
         relevant_output = []
-        if agent["file_upload"]:
-            namespace = agent["vector_id"]
-            ps = PineConeConfig(
-                api_key=Config.PINECONE_API_KEY,
-                index_name=Config.PINECONE_INDEX_NAME,
-                namespace=namespace,
-            )
+        if agent['is_custom_agent']:
+            if agent["file_upload"]:
+                namespace = agent["vector_id"]
+                ps = PineConeConfig(
+                    api_key=Config.PINECONE_API_KEY,
+                    index_name=Config.PINECONE_INDEX_NAME,
+                    namespace=namespace,
+                )
 
-            vector_output = ps.vector_store.similarity_search(query=task.description)
-            relevant_output = [
-                str(vector_output[i].page_content)
-                for i in range(min(len(vector_output), 2))
-            ]
+                vector_output = ps.vector_store.similarity_search(query=task.description)
+                relevant_output = [
+                    str(vector_output[i].page_content)
+                    for i in range(min(len(vector_output), 2))
+                ]
 
         previous_output = []
         if include_previous_output:

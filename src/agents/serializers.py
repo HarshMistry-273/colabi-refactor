@@ -81,6 +81,7 @@ def get_agent_serializer(agents: list[Agent]):
                     "backstory": agent.backstory,
                     "tools": agent.tools,
                     "role": agent.role,
+                    "is_custom_agent": agent.is_custom_agent,
                 }
             )
 
