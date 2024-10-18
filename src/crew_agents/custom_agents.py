@@ -35,12 +35,14 @@ class CustomAgent:
         tools: list[Tool],
         description: str,
         expected_output: str,
+        is_chatbot: bool = False,
         model: str = Config.MODEL_NAME,
     ):
         self.model = ChatOpenAI(
             model=model,
             api_key=Config.OPENAI_API_KEY,
         )
+        self.is_chatbot = is_chatbot
         # Agents
         self.role = role
         self.goal = goal
@@ -57,28 +59,30 @@ class CustomAgent:
         self.crew = self.create_crew()
 
     def create_agent(self) -> list[Agent]:
-
+        agents = []
         custome_agent = Agent(
             role=self.role,
             goal=self.goal,
             backstory=self.backstory,
             llm=self.model,
             tools=self.tools,
-            verbose=True,
+            verbose=False,
         )
+        agents.append(custome_agent)
+        if not self.is_chatbot:
+            comment_agent = Agent(
+                role="Comment agent",
+                goal="Comment on the previous task completed by agents.",
+                backstory="You are obeserver of task being completed by Agents and you look for if task is being completed and as expexted",
+                llm=self.model,
+                verbose=True,
+            )
+            agents.append(comment_agent)
 
-        comment_agent = Agent(
-            role="Comment agent",
-            goal="Comment on the previous task completed by agents.",
-            backstory="You are obeserver of task being completed by Agents and you look for if task is being completed and as expexted",
-            llm=self.model,
-            verbose=True,
-        )
-
-        agents = [custome_agent, comment_agent]
         return agents
 
     def create_tasks(self) -> list[Task]:
+        tasks = []
         prompt = get_task_prompt()
         custom_task = Task(
             description=prompt,
@@ -86,27 +90,38 @@ class CustomAgent:
             agent=self.agents[0],
             output_json=OutputFile,
         )
+        tasks.append(custom_task)
+        if not self.is_chatbot:
+            comment_prompt = get_comment_task_prompt()
+            comment_task = Task(
+                description=comment_prompt,
+                expected_output="Task reviewed: ",
+                agent=self.agents[1],
+            )
+            tasks.append(comment_task)
 
-        comment_prompt = get_comment_task_prompt()
-        comment_task = Task(
-            description=comment_prompt,
-            expected_output="Task reviewed: ",
-            agent=self.agents[1],
-        )
-
-        return [custom_task, comment_task]
+        return tasks
 
     def create_crew(self) -> Crew:
         crew = Crew(
             agents=self.agents,
             tasks=self.tasks,
             process=Process.sequential,
-            verbose=True,
+            verbose=False,
+            memory=True,
+            output_log_file="crew.log",
         )
         return crew
 
-    def main(self) -> tuple[list[TaskOutput]]:
-        response = self.crew.kickoff(inputs={"description": self.description})
+    async def main(self) -> tuple[list[TaskOutput]]:
+        if self.is_chatbot:
+            response = await self.crew.kickoff_async(
+                inputs={"description": self.description}
+            )
+            return response
+        response = await self.crew.kickoff_async(
+            inputs={"description": self.description}
+        )
         output = response.tasks_output
 
         custom_task_output = output[0]

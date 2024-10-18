@@ -22,7 +22,7 @@ router = APIRouter()
 
 
 @router.get("")
-def get_agents(id: str = None, db: Session = Depends(get_db_session)):
+async def get_agents(id: str = None, db: Session = Depends(get_db_session)):
     """
     Retrieve agents from the system, optionally filtered by ID.
 
@@ -49,7 +49,7 @@ def get_agents(id: str = None, db: Session = Depends(get_db_session)):
     """
     try:
         logger.info("Agent listing endpoint")
-        all_agents = AgentController.get_agents_ctrl(db, id)
+        all_agents = await AgentController.get_agents_ctrl(db, id)
         logger_set.info("Agent listing successful")
         return JSONResponse(
             status_code=200,
@@ -70,7 +70,7 @@ def get_agents(id: str = None, db: Session = Depends(get_db_session)):
 
 
 @router.post("")
-def create_agent(agent: CreateAgentSchema, db: Session = Depends(get_db_session)):
+async def create_agent(agent: CreateAgentSchema, db: Session = Depends(get_db_session)):
     """
     Create a new agent in the system.
 
@@ -98,7 +98,7 @@ def create_agent(agent: CreateAgentSchema, db: Session = Depends(get_db_session)
     """
     try:
         logger.info("Predefined agent creation endpoint")
-        new_agent = AgentController.create_agent_ctrl(db, agent)
+        new_agent = await AgentController.create_agent_ctrl(db, agent)
         logger_set.info(f"Agent creation successful, Agent Id : {new_agent[0]['id']}")
         return JSONResponse(
             status_code=200,
@@ -119,12 +119,13 @@ def create_agent(agent: CreateAgentSchema, db: Session = Depends(get_db_session)
 
 
 @router.post("/custom")
-def create_custom_agent(
+async def create_custom_agent(
     name: str = Form(...),
     role: str = Form(...),
     goal: str = Form(...),
     backstory: str = Form(...),
     tools: Optional[str] = Form(...),
+    is_chatbot: Optional[bool] = Form(...),
     payload: Optional[str] = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db_session),
@@ -155,15 +156,16 @@ def create_custom_agent(
     """
     try:
         logger.info("Custom agent creation endpoint")
-        new_custom_agent = AgentController.create_custom_agent_ctrl(
-            db,
-            name,
-            role,
-            goal,
-            backstory,
-            tools.replace('"', "").split(","),
-            json.loads(payload),
-            file,
+        new_custom_agent = await AgentController.create_custom_agent_ctrl(
+            db=db,
+            name=name,
+            role=role,
+            goal=goal,
+            backstory=backstory,
+            is_chatbot=is_chatbot,
+            tools=tools.replace('"', "").split(","),
+            payload=json.loads(payload),
+            file=file,
         )
         logger_set.info(
             f"Agent creation successful, Agent Id : {new_custom_agent[0]['id']}"
@@ -186,7 +188,7 @@ def create_custom_agent(
 
 
 @router.put("/custom/{id}")
-def update_custom_agent(
+async def update_custom_agent(
     id: str,
     name: Optional[str] = Form(None),
     role: Optional[str] = Form(None),
@@ -199,7 +201,7 @@ def update_custom_agent(
 ):
     try:
         logger.info("Custom agent updation endpoint")
-        agent = AgentController.update_custom_agent_ctrl(
+        agent = await AgentController.update_custom_agent_ctrl(
             db,
             id,
             name,

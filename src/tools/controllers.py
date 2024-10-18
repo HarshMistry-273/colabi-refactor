@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 class ToolController:
     @staticmethod
-    def create_tool_ctrl(db: Session, tool: Tool):
+    async def create_tool_ctrl(db: Session, tool: Tool):
         try:
             new_tool = Tool(name=tool.name, description=tool.description)
             db.add(new_tool)
@@ -18,7 +18,7 @@ class ToolController:
             raise HTTPException(status_code=500, detail=str(e))
 
     @staticmethod
-    def get_tools_ctrl(db: Session, id):
+    async def get_tools_ctrl(db: Session, id):
         try:
             if id:
                 tools = db.query(Tool).filter(Tool.id == id).all()
@@ -30,7 +30,7 @@ class ToolController:
             raise HTTPException(status_code=500, detail=str(e))
 
     @staticmethod
-    def get_tools_by_agent_id(db: Session, agent_id):
+    async def get_tools_by_agent_id(db: Session, agent_id):
         try:
             tools = db.query(Tool).filter(Tool.agent_id == agent_id).all()
 

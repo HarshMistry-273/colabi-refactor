@@ -17,3 +17,5 @@ class Config:
     REDIS_URL = os.getenv("REDIS_URL")
     PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
     PINECONE_INDEX_NAME = "testing"
+    AGENTOPS_API_KEY = os.getenv("AGENTOPS_API_KEY")
+    ASYNC_DATABASE_URL = os.getenv("ASYNC_DATABASE_URL")

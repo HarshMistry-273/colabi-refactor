@@ -12,7 +12,7 @@ from src.utils.utils import get_uuid
 class AgentController:
 
     @staticmethod
-    def get_agents_ctrl(db: Session, id) -> list[dict]:
+    async def get_agents_ctrl(db: Session, id) -> list[dict]:
         try:
             if id:
                 agents = db.query(Agent).filter(Agent.id == id).all()
@@ -24,7 +24,7 @@ class AgentController:
             raise HTTPException(status_code=500, detail=str(e))
 
     @staticmethod
-    def create_agent_ctrl(db: Session, agent: Agent) -> list[dict]:
+    async def create_agent_ctrl(db: Session, agent: Agent) -> list[dict]:
         try:
             new_agent = Agent(
                 name=agent.name,
@@ -32,6 +32,7 @@ class AgentController:
                 goal=agent.goal,
                 backstory=agent.backstory,
                 tools=agent.tools,
+                is_chatbot=agent.is_chatbot,
             )
             db.add(new_agent)
             db.commit()
@@ -43,20 +44,20 @@ class AgentController:
             raise HTTPException(status_code=500, detail=str(e))
 
     @staticmethod
-    def create_custom_agent_ctrl(
+    async def create_custom_agent_ctrl(
         db: Session,
         name: str,
         role: str,
         goal: str,
         backstory: str,
         tools: str,
+        is_chatbot: bool,
         payload: dict,
         file: UploadFile,
     ) -> list[dict]:
         try:
             file_path = None
             namespace = None
-
             if payload.get("file_upload", False):
                 file_path = os.path.join(
                     os.path.abspath(os.curdir), "static", file.filename
@@ -86,7 +87,8 @@ class AgentController:
                 tools=tools,
                 vector_id=namespace,
                 file_url=file_path,
-                **dict(payload),
+                is_chatbot=is_chatbot,
+                ** dict(payload),
             )
             db.add(custom_agent)
             db.commit()
@@ -98,7 +100,7 @@ class AgentController:
             raise HTTPException(status_code=500, detail=str(e))
 
     @staticmethod
-    def update_custom_agent_ctrl(
+    async def update_custom_agent_ctrl(
         db: Session,
         id: str,
         name: str = None,

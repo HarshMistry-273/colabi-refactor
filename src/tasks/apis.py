@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("")
-def get_task(id: str, db: Session = Depends(get_db_session)):
+async def get_task(id: str, db: Session = Depends(get_db_session)):
     """
     Retrieve a task by its ID and return its details as a JSON response.
 
@@ -40,7 +40,7 @@ def get_task(id: str, db: Session = Depends(get_db_session)):
     """
     try:
         logger.info("Task get endpoint")
-        tasks = TaskController.get_tasks_ctrl(db, id)
+        tasks = await TaskController.get_tasks_ctrl(db, id)
 
         logger_set.info("Task listed successfully.")
         return JSONResponse(
@@ -70,7 +70,7 @@ def get_task(id: str, db: Session = Depends(get_db_session)):
 
 
 @router.post("")
-def create_task(
+async def create_task(        
     tasks: CreateTaskSchema, request: Request, db: Session = Depends(get_db_session)
 ):
     """
@@ -98,7 +98,7 @@ def create_task(
     logger.info("Task create endpoint")
 
     try:
-        new_task = TaskController.create_tasks_ctrl(db, tasks)
+        new_task = await TaskController.create_tasks_ctrl(db, tasks)
 
         res = task_creation_celery.delay(
             tasks.agent_id,

@@ -29,5 +29,6 @@ class Agent(Base):
     file_url = Column(String(255), nullable=True)
     is_custom_agent = Column(Boolean, default=False, nullable=False)
     vector_id = Column(String(36), nullable=True)
+    is_chatbot = Column(Boolean, default=False)
 
     task = relationship("Task", back_populates="agent", cascade="all, delete-orphan")

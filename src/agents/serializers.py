@@ -20,6 +20,7 @@ class CreateAgentSchema(BaseModel):
     goal: str
     backstory: str
     tools: Optional[list[str]]
+    is_chatbot: Optional[bool] = False
 
 
 class UpdateCustomAgent(BaseModel):
@@ -40,6 +41,7 @@ class UpdateCustomAgent(BaseModel):
     context: Optional[str] = None
     file_type: Optional[str] = None
     upload_url: Optional[str] = None
+    is_chatbot: Optional[bool] = None
 
 
 def get_agent_serializer(agents: list[Agent]) -> list[dict]:
@@ -70,6 +72,7 @@ def get_agent_serializer(agents: list[Agent]) -> list[dict]:
                     "context": agent.context,
                     "is_custom_agent": agent.is_custom_agent,
                     "vector_id": agent.vector_id,
+                    "is_chatbot": agent.is_chatbot,
                 }
             )
         else:
@@ -81,6 +84,7 @@ def get_agent_serializer(agents: list[Agent]) -> list[dict]:
                     "backstory": agent.backstory,
                     "tools": agent.tools,
                     "role": agent.role,
+                    "is_chatbot": agent.is_chatbot,
                     "is_custom_agent": agent.is_custom_agent,
                 }
             )

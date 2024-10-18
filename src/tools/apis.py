@@ -15,7 +15,7 @@ router = APIRouter()
 
 
 @router.get("")
-def get_tools(id: str = None, db: Session = Depends(get_db_session)):
+async def get_tools(id: str = None, db: Session = Depends(get_db_session)):
     """
     Retrieve tools based on the provided ID or fetch all tools if no ID is given.
 
@@ -32,7 +32,7 @@ def get_tools(id: str = None, db: Session = Depends(get_db_session)):
     """
     try:
         logger.info("Tool listing endpoint")
-        tools = ToolController.get_tools_ctrl(db, id)
+        tools = await ToolController.get_tools_ctrl(db, id)
         logger_set.info(f"Tools listed")
 
         return JSONResponse(
@@ -53,7 +53,7 @@ def get_tools(id: str = None, db: Session = Depends(get_db_session)):
 
 
 @router.post("")
-def create_tools(tool: CreateToolSchema, db: Session = Depends(get_db_session)):
+async def create_tools(tool: CreateToolSchema, db: Session = Depends(get_db_session)):
     """
     Create a new tool and return a JSON response.
 
@@ -73,7 +73,7 @@ def create_tools(tool: CreateToolSchema, db: Session = Depends(get_db_session)):
     """
     try:
         logger.info("Tool creation endpoint")
-        new_tool = ToolController.create_tool_ctrl(db, tool)
+        new_tool = await ToolController.create_tool_ctrl(db, tool)
         logger_set.info(f"Tool created, Tool id : {tool["id"]}")
         return JSONResponse(
             status_code=200,

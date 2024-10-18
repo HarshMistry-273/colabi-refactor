@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+import pymongo
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -46,3 +47,17 @@ def get_db_session_celery() -> Generator:
 
 
 db = SessionLocal()
+
+try:
+    # Creating a MongoClient to connect to the local MongoDB server
+    client = pymongo.MongoClient("mongodb://localhost:27017/")
+
+    # Selecting a specific database named 'your_database_name'
+    database = client["colabi"]
+except Exception as e:
+    print(f"Error: {e}")
+
+
+def get_collection():
+    collection = database["chat_history"]
+    yield collection
